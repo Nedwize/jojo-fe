@@ -47,7 +47,7 @@ export function ChatInput({ onSend, className, disabled, ...props }: ChatInputPr
         type="submit"
         variant={isDisabled ? 'secondary' : 'primary'}
         disabled={isDisabled}
-        className="font-mono"
+        className="font-abee-zee"
       >
         SEND
       </Button>

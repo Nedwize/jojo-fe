@@ -24,7 +24,9 @@ export default function Base() {
         <div className="space-y-2">
           {buttonVariants.map((variant) => (
             <div key={variant}>
-              <h4 className="text-muted-foreground mb-2 font-mono text-xs uppercase">{variant}</h4>
+              <h4 className="text-muted-foreground font-abee-zee mb-2 text-xs uppercase">
+                {variant}
+              </h4>
               <div className="grid w-full grid-cols-4 gap-2">
                 <div>
                   <Button variant={variant} size="sm">
@@ -56,7 +58,9 @@ export default function Base() {
         <div className="space-y-2">
           {toggleVariants.map((variant) => (
             <div key={variant}>
-              <h4 className="text-muted-foreground mb-2 font-mono text-xs uppercase">{variant}</h4>
+              <h4 className="text-muted-foreground font-abee-zee mb-2 text-xs uppercase">
+                {variant}
+              </h4>
               <div className="grid w-full grid-cols-3 gap-2">
                 <div>
                   <Toggle key={variant} variant={variant} size="sm">
@@ -85,7 +89,9 @@ export default function Base() {
         <div className="space-y-6">
           {alertVariants.map((variant) => (
             <div key={variant}>
-              <h4 className="text-muted-foreground mb-2 font-mono text-xs uppercase">{variant}</h4>
+              <h4 className="text-muted-foreground font-abee-zee mb-2 text-xs uppercase">
+                {variant}
+              </h4>
               <Alert key={variant} variant={variant}>
                 <AlertTitle>Alert {variant} title</AlertTitle>
                 <AlertDescription>This is a {variant} alert description.</AlertDescription>
@@ -100,7 +106,9 @@ export default function Base() {
         <h3 className="text-muted-foreground text-sm">A select component.</h3>
         <div className="grid w-full grid-cols-2 gap-2">
           <div>
-            <h4 className="text-muted-foreground mb-2 font-mono text-xs uppercase">Size default</h4>
+            <h4 className="text-muted-foreground font-abee-zee mb-2 text-xs uppercase">
+              Size default
+            </h4>
             <Select>
               <SelectTrigger>
                 <SelectValue placeholder="Select a track" />
@@ -113,7 +121,7 @@ export default function Base() {
             </Select>
           </div>
           <div>
-            <h3 className="text-muted-foreground mb-2 font-mono text-xs uppercase">Size sm</h3>
+            <h3 className="text-muted-foreground font-abee-zee mb-2 text-xs uppercase">Size sm</h3>
             <Select>
               <SelectTrigger size="sm">
                 <SelectValue placeholder="Select a track" />

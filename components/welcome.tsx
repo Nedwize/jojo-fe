@@ -32,10 +32,10 @@ export const Welcome = ({
         />
       </svg>
 
-      <p className="text-fg1 max-w-prose pt-1 leading-6 font-medium">
+      <p className="text-fg1 font-abee-zee max-w-prose pt-1 text-2xl leading-6 font-medium">
         Chat live with your voice AI agent
       </p>
-      <Button variant="primary" size="lg" onClick={onStartCall} className="mt-6 w-64 font-mono">
+      <Button variant="primary" size="lg" onClick={onStartCall} className="font-abee-zee mt-6 w-64">
         {startButtonText}
       </Button>
     </div>

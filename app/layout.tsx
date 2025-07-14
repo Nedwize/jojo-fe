@@ -1,5 +1,4 @@
-import { Public_Sans } from 'next/font/google';
-import localFont from 'next/font/local';
+import { ABeeZee, Public_Sans } from 'next/font/google';
 import { headers } from 'next/headers';
 import { ApplyThemeScript, ThemeToggle } from '@/components/theme-toggle';
 import { getAppConfig, getOrigin } from '@/lib/utils';
@@ -10,30 +9,10 @@ const publicSans = Public_Sans({
   subsets: ['latin'],
 });
 
-const commitMono = localFont({
-  src: [
-    {
-      path: './fonts/CommitMono-400-Regular.otf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './fonts/CommitMono-700-Regular.otf',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: './fonts/CommitMono-400-Italic.otf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: './fonts/CommitMono-700-Italic.otf',
-      weight: '700',
-      style: 'italic',
-    },
-  ],
-  variable: '--font-commit-mono',
+const abeeZee = ABeeZee({
+  variable: '--font-abee-zee',
+  subsets: ['latin'],
+  weight: ['400'],
 });
 
 interface RootLayoutProps {
@@ -60,9 +39,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <meta name="description" content={pageDescription + '\n\nBuilt with LiveKit Agents.'} />
         <ApplyThemeScript />
       </head>
-      <body
-        className={`${publicSans.variable} ${commitMono.variable} overflow-x-hidden antialiased`}
-      >
+      <body className={`${publicSans.variable} ${abeeZee.variable} overflow-x-hidden antialiased`}>
         {children}
         <div className="group fixed bottom-0 left-1/2 z-50 mb-2 -translate-x-1/2">
           <ThemeToggle className="translate-y-20 transition-transform delay-150 duration-300 group-hover:translate-y-0" />
