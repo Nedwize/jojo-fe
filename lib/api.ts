@@ -13,10 +13,13 @@ export interface HealthCheckResponse {
   [key: string]: unknown;
 }
 
-/**
- * User character types
- */
-export type UserCharacter = 'bunny' | 'cat' | 'dog' | 'fox' | 'tiger' | 'giraffe';
+export interface Character {
+  name: string;
+  image: string;
+  slug: UserCharacter;
+}
+
+export type UserCharacter = 'bunny' | 'cat' | 'dog' | 'giraffe' | 'penguin';
 
 /**
  * User interface
@@ -29,10 +32,16 @@ export interface User {
 /**
  * User response from API
  */
-export interface UserResponse extends User {
-  slug: string;
-  id?: string;
-  createdAt?: string;
+export interface UserResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    name: string;
+    character: UserCharacter;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 /**
