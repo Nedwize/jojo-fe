@@ -249,4 +249,17 @@
       background-position: 250% 0;
     }
   }
+
+  @keyframes bounce {
+    0% {
+      transform: translateY(0px);
+    }
+    100% {
+      transform: translateY(4px);
+    }
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 3s ease-in-out infinite alternate;
+  }
 }
