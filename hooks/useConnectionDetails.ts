@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ConnectionDetails } from '@/app/api/connection-details/route';
 
-export default function useConnectionDetails() {
+export default function useConnectionDetails(userId?: string) {
   // Generate room connection details, including:
   //   - A random Room name
   //   - A random Participant name
@@ -19,6 +19,12 @@ export default function useConnectionDetails() {
       process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details',
       window.location.origin
     );
+
+    // Add userId to query parameters if provided
+    if (userId) {
+      url.searchParams.set('userId', userId);
+    }
+
     fetch(url.toString())
       .then((res) => res.json())
       .then((data) => {
@@ -27,7 +33,7 @@ export default function useConnectionDetails() {
       .catch((error) => {
         console.error('Error fetching connection details:', error);
       });
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     fetchConnectionDetails();

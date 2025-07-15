@@ -21,7 +21,8 @@ interface AppProps {
 export function App({ appConfig }: AppProps) {
   const room = useMemo(() => new Room(), []);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const { connectionDetails, refreshConnectionDetails } = useConnectionDetails();
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(userId);
 
   useEffect(() => {
     const onDisconnected = () => {
@@ -69,6 +70,7 @@ export function App({ appConfig }: AppProps) {
         key="welcome"
         startButtonText={startButtonText}
         onStartCall={() => setSessionStarted(true)}
+        onNameSubmit={(name, userId) => setUserId(userId)}
         disabled={sessionStarted}
         initial={{ opacity: 0 }}
         animate={{ opacity: sessionStarted ? 0 : 1 }}

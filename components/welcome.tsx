@@ -7,7 +7,7 @@ interface WelcomeProps {
   disabled: boolean;
   startButtonText: string;
   onStartCall: () => void;
-  onNameSubmit?: (name: string) => void;
+  onNameSubmit?: (name: string, userId?: string) => void;
 }
 
 const characters: Character[] = [
@@ -71,7 +71,7 @@ export const Welcome = ({
             characters.find((c) => c.slug === existingUserResponse.user.character) ?? null
           );
           setNameSubmitted(true);
-          onNameSubmit?.(name.trim());
+          onNameSubmit?.(name.trim(), existingUserResponse.user.id);
         }
       } catch (error) {
         console.error('Error handling name submission:', error);
@@ -96,7 +96,7 @@ export const Welcome = ({
 
         setShowCharacterSelection(false);
         setNameSubmitted(true);
-        onNameSubmit?.(name.trim());
+        onNameSubmit?.(name.trim(), newUser.user.id);
       } catch (error) {
         console.error('Error creating user:', error);
         // Still proceed with the UI flow even if API fails

@@ -16,7 +16,7 @@ export type ConnectionDetails = {
   participantToken: string;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (LIVEKIT_URL === undefined) {
       throw new Error('LIVEKIT_URL is not defined');
@@ -28,9 +28,15 @@ export async function GET() {
       throw new Error('LIVEKIT_API_SECRET is not defined');
     }
 
+    // Get user ID from query parameters
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
     // Generate participant token
     const participantName = 'user';
-    const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
+    const participantIdentity = userId
+      ? `voice_assistant_user_${userId}`
+      : `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
     const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
     const participantToken = await createParticipantToken(
       { identity: participantIdentity, name: participantName },
