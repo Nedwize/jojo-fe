@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { toastAlert } from '@/components/alert-toast';
 import { Button } from '@/components/ui/button';
-import { authenticateUser, clearStoredAuthData, getStoredAuthData } from '@/lib/auth';
+import { AuthData, authenticateUser, clearStoredAuthData, getStoredAuthData } from '@/lib/auth';
 
 interface WelcomeProps {
   disabled: boolean;
   startButtonText: string;
   onStartCall: () => void;
-  onAuthSuccess?: (authData: any) => void;
+  onAuthSuccess?: (authData: AuthData) => void;
+  isLoading?: boolean;
 }
 
 export const Welcome = ({
@@ -15,13 +17,14 @@ export const Welcome = ({
   startButtonText,
   onStartCall,
   onAuthSuccess,
+  isLoading: externalLoading = false,
   ref,
 }: React.ComponentProps<'div'> & WelcomeProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authData, setAuthData] = useState<any>(null);
+  const [authData, setAuthData] = useState<AuthData | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Check for stored auth on component mount
@@ -48,7 +51,19 @@ export const Welcome = ({
         onAuthSuccess?.(newAuthData);
       } catch (error) {
         console.error('Login failed:', error);
-        // You could add error state here to show to user
+
+        // Show error toast
+        toastAlert({
+          title: 'Login failed',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Please check your email and password and try again.',
+        });
+
+        // Clear the input fields
+        setEmail('');
+        setPassword('');
       } finally {
         setIsLoading(false);
       }
@@ -154,6 +169,7 @@ export const Welcome = ({
               size="lg"
               onClick={onStartCall}
               className="font-abee-zee w-full"
+              disabled={externalLoading}
             >
               {startButtonText}
             </Button>

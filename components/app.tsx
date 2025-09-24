@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Room, RoomEvent } from 'livekit-client';
 import { motion } from 'motion/react';
 import { RoomAudioRenderer, RoomContext, StartAudio } from '@livekit/components-react';
@@ -9,6 +9,7 @@ import { SessionView } from '@/components/session-view';
 import { Toaster } from '@/components/ui/sonner';
 import { Welcome } from '@/components/welcome';
 import useConnectionDetails from '@/hooks/useConnectionDetails';
+import { type AuthData, type LiveKitSessionData, createLiveKitSession } from '@/lib/auth';
 import type { AppConfig } from '@/lib/types';
 
 const MotionWelcome = motion.create(Welcome);
@@ -22,7 +23,10 @@ export function App({ appConfig }: AppProps) {
   const room = useMemo(() => new Room(), []);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
-  const { connectionDetails, refreshConnectionDetails } = useConnectionDetails(userId);
+  const [authData, setAuthData] = useState<AuthData | null>(null);
+  const [liveKitSession, setLiveKitSession] = useState<LiveKitSessionData | null>(null);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const { refreshConnectionDetails } = useConnectionDetails(userId);
 
   useEffect(() => {
     const onDisconnected = () => {
@@ -44,13 +48,15 @@ export function App({ appConfig }: AppProps) {
   }, [room, refreshConnectionDetails]);
 
   useEffect(() => {
-    if (sessionStarted && room.state === 'disconnected' && connectionDetails) {
+    if (sessionStarted && room.state === 'disconnected' && liveKitSession) {
+      console.log('Connecting to LiveKit room:', liveKitSession.room);
       Promise.all([
         room.localParticipant.setMicrophoneEnabled(true, undefined, {
           preConnectBuffer: appConfig.isPreConnectBufferEnabled,
         }),
-        room.connect(connectionDetails.serverUrl, connectionDetails.participantToken),
+        room.connect(liveKitSession.roomUrl, liveKitSession.token),
       ]).catch((error) => {
+        console.error('LiveKit connection error:', error);
         toastAlert({
           title: 'There was an error connecting to the agent',
           description: `${error.name}: ${error.message}`,
@@ -60,7 +66,33 @@ export function App({ appConfig }: AppProps) {
     return () => {
       room.disconnect();
     };
-  }, [room, sessionStarted, connectionDetails, appConfig.isPreConnectBufferEnabled]);
+  }, [room, sessionStarted, liveKitSession, appConfig.isPreConnectBufferEnabled]);
+
+  const handleStartCall = useCallback(async () => {
+    if (!authData) {
+      toastAlert({
+        title: 'Authentication required',
+        description: 'Please log in first to start a call.',
+      });
+      return;
+    }
+
+    setIsCreatingSession(true);
+    try {
+      const sessionData = await createLiveKitSession(authData.access_token);
+
+      setLiveKitSession(sessionData);
+      setSessionStarted(true);
+    } catch (error) {
+      console.error('Failed to create LiveKit session:', error);
+      toastAlert({
+        title: 'Failed to start session',
+        description: 'Could not create LiveKit session. Please try again.',
+      });
+    } finally {
+      setIsCreatingSession(false);
+    }
+  }, [authData]);
 
   const { startButtonText } = appConfig;
 
@@ -68,11 +100,13 @@ export function App({ appConfig }: AppProps) {
     <>
       <MotionWelcome
         key="welcome"
-        startButtonText={startButtonText}
-        onStartCall={() => setSessionStarted(true)}
-        onAuthSuccess={(authData) => {
+        startButtonText={isCreatingSession ? 'Creating session...' : startButtonText}
+        onStartCall={handleStartCall}
+        onAuthSuccess={useCallback((authData: AuthData) => {
+          setAuthData(authData);
           setUserId(authData.user.id);
-        }}
+        }, [])}
+        isLoading={isCreatingSession}
         disabled={sessionStarted}
         initial={{ opacity: 0 }}
         animate={{ opacity: sessionStarted ? 0 : 1 }}
