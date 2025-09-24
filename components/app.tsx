@@ -70,7 +70,9 @@ export function App({ appConfig }: AppProps) {
         key="welcome"
         startButtonText={startButtonText}
         onStartCall={() => setSessionStarted(true)}
-        onNameSubmit={(name, userId) => setUserId(userId)}
+        onAuthSuccess={(authData) => {
+          setUserId(authData.user.id);
+        }}
         disabled={sessionStarted}
         initial={{ opacity: 0 }}
         animate={{ opacity: sessionStarted ? 0 : 1 }}
