@@ -60,8 +60,12 @@ const classNames = {
   // Agent
   // chatOpen: false
   // layout: Column 1 / Row 1 / Column-Span 2 / Row-Span 3
-  // align: x-center y-center
-  agentChatClosed: ['col-start-1 row-start-1', 'col-span-2 row-span-3', 'place-content-center'],
+  // align: x-center y-start (moved to top, centered horizontally)
+  agentChatClosed: [
+    'col-start-1 row-start-1',
+    'col-span-2 row-span-3',
+    'place-content-start place-items-center',
+  ],
   // Second tile
   // chatOpen: true,
   // hasSecondTile: true
@@ -128,9 +132,11 @@ export function MediaTiles({ chatOpen }: MediaTilesProps) {
           {/* agent */}
           <div
             className={cn([
-              'grid',
-              // 'bg-[hotpink]', // for debugging
-              !chatOpen && classNames.agentChatClosed,
+              // Use flexbox for better centering when chat is closed
+              !chatOpen
+                ? 'col-span-2 col-start-1 row-span-3 row-start-1 flex flex-col items-center justify-start'
+                : 'grid',
+              // Keep original grid positioning for chat open states
               chatOpen && hasSecondTile && classNames.agentChatOpenWithSecondTile,
               chatOpen && !hasSecondTile && classNames.agentChatOpenWithoutSecondTile,
             ])}
@@ -146,7 +152,7 @@ export function MediaTiles({ chatOpen }: MediaTilesProps) {
                   transition={agentLayoutTransition}
                   state={agentState}
                   audioTrack={agentAudioTrack}
-                  className={cn(chatOpen ? 'h-[90px]' : 'h-auto w-full')}
+                  className={cn(chatOpen ? 'h-[90px]' : 'mt-4 h-auto w-full')}
                 />
               )}
               {isAvatar && (

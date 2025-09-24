@@ -15,8 +15,8 @@ import { ChatMessageView } from '@/components/livekit/chat/chat-message-view';
 import { MediaTiles } from '@/components/livekit/media-tiles';
 import useChatAndTranscription from '@/hooks/useChatAndTranscription';
 import { useDebugMode } from '@/hooks/useDebug';
-import type { AppConfig } from '@/lib/types';
 import type { PushToTalkManager } from '@/lib/push-to-talk';
+import type { AppConfig } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 function isAgentAvailable(agentState: AgentState) {
@@ -72,8 +72,8 @@ export const SessionView = ({
         if (!isAgentAvailable(agentState)) {
           const reason =
             agentState === 'connecting'
-              ? 'Agent did not join the room. '
-              : 'Agent connected but did not complete initializing. ';
+              ? 'Connection failed. '
+              : 'Connected but failed to initialize. ';
 
           toastAlert({
             title: 'Session ended',
@@ -147,6 +147,43 @@ export const SessionView = ({
 
       <MediaTiles chatOpen={chatOpen} />
 
+      {/* Central Push-to-Talk Button */}
+      <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center">
+        <div className="pointer-events-auto">
+          {pushToTalkManager && (
+            <button
+              onMouseDown={handlePushToTalkStart}
+              onMouseUp={handlePushToTalkEnd}
+              onMouseLeave={handlePushToTalkEnd}
+              onTouchStart={handlePushToTalkStart}
+              onTouchEnd={handlePushToTalkEnd}
+              className={cn(
+                'rounded-full border-4 transition-all duration-200 select-none active:scale-95',
+                'h-32 w-32 md:h-40 md:w-40',
+                'flex items-center justify-center',
+                'font-abee-zee text-sm font-semibold md:text-base',
+                isPushToTalkActive
+                  ? 'border-red-600 bg-red-500 text-white shadow-lg shadow-red-500/50'
+                  : 'border-gray-300 bg-white text-gray-700 shadow-md hover:bg-gray-50'
+              )}
+              aria-label="Push to talk"
+            >
+              {isPushToTalkActive ? (
+                <div className="flex flex-col items-center gap-2">
+                  {/* <div className="w-4 h-4 bg-white rounded-full animate-pulse" /> */}
+                  <span>TALKING</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  {/* <div className="w-4 h-4 bg-current rounded-full" /> */}
+                  <span>HOLD TO TALK</span>
+                </div>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="bg-background fixed right-0 bottom-0 left-0 z-50 px-3 pt-2 pb-3 md:px-12 md:pb-12">
         <motion.div
           key="control-bar"
@@ -176,7 +213,7 @@ export const SessionView = ({
                 )}
               >
                 <p className="animate-text-shimmer inline-block !bg-clip-text text-sm font-semibold text-transparent">
-                  Agent is listening, ask it a question
+                  Ready to listen, ask me a question
                 </p>
               </motion.div>
             )}
