@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { AppConfig } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import type { PushToTalkManager } from '@/lib/push-to-talk';
 import { DeviceSelect } from '../device-select';
 import { TrackToggle } from '../track-toggle';
 import { UseAgentControlBarProps, useAgentControlBar } from './hooks/use-agent-control-bar';
@@ -21,6 +22,10 @@ export interface AgentControlBarProps
   onSendMessage?: (message: string) => Promise<void>;
   onDisconnect?: () => void;
   onDeviceError?: (error: { source: Track.Source; error: Error }) => void;
+  pushToTalkManager?: PushToTalkManager | null;
+  isPushToTalkActive?: boolean;
+  onPushToTalkStart?: () => void;
+  onPushToTalkEnd?: () => void;
 }
 
 /**
@@ -35,6 +40,10 @@ export function AgentControlBar({
   onChatOpenChange,
   onDisconnect,
   onDeviceError,
+  pushToTalkManager,
+  isPushToTalkActive = false,
+  onPushToTalkStart,
+  onPushToTalkEnd,
   ...props
 }: AgentControlBarProps) {
   const participants = useRemoteParticipants();
@@ -70,6 +79,18 @@ export function AgentControlBar({
   const onLeave = () => {
     handleDisconnect();
     onDisconnect?.();
+  };
+
+  const handlePushToTalkMouseDown = () => {
+    if (pushToTalkManager && !isPushToTalkActive) {
+      onPushToTalkStart?.();
+    }
+  };
+
+  const handlePushToTalkMouseUp = () => {
+    if (pushToTalkManager && isPushToTalkActive) {
+      onPushToTalkEnd?.();
+    }
   };
 
   React.useEffect(() => {
@@ -200,6 +221,25 @@ export function AgentControlBar({
             >
               <ChatTextIcon weight="bold" />
             </Toggle>
+          )}
+
+          {pushToTalkManager && (
+            <Button
+              variant={isPushToTalkActive ? "default" : "secondary"}
+              aria-label="Push to talk"
+              onMouseDown={handlePushToTalkMouseDown}
+              onMouseUp={handlePushToTalkMouseUp}
+              onMouseLeave={handlePushToTalkMouseUp}
+              className={cn(
+                "aspect-square h-full select-none",
+                isPushToTalkActive && "bg-red-500 hover:bg-red-600"
+              )}
+            >
+              <div className={cn(
+                "h-3 w-3 rounded-full",
+                isPushToTalkActive ? "bg-white animate-pulse" : "bg-current"
+              )} />
+            </Button>
           )}
         </div>
         {visibleControls.leave && (

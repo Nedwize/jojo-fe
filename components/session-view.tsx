@@ -16,6 +16,7 @@ import { MediaTiles } from '@/components/livekit/media-tiles';
 import useChatAndTranscription from '@/hooks/useChatAndTranscription';
 import { useDebugMode } from '@/hooks/useDebug';
 import type { AppConfig } from '@/lib/types';
+import type { PushToTalkManager } from '@/lib/push-to-talk';
 import { cn } from '@/lib/utils';
 
 function isAgentAvailable(agentState: AgentState) {
@@ -26,12 +27,18 @@ interface SessionViewProps {
   appConfig: AppConfig;
   disabled: boolean;
   sessionStarted: boolean;
+  pushToTalkManager?: PushToTalkManager | null;
+  isPushToTalkActive?: boolean;
+  onPushToTalkStateChange?: (active: boolean) => void;
 }
 
 export const SessionView = ({
   appConfig,
   disabled,
   sessionStarted,
+  pushToTalkManager,
+  isPushToTalkActive = false,
+  onPushToTalkStateChange,
   ref,
 }: React.ComponentProps<'div'> & SessionViewProps) => {
   const { state: agentState } = useVoiceAssistant();
@@ -44,6 +51,20 @@ export const SessionView = ({
   async function handleSendMessage(message: string) {
     await send(message);
   }
+
+  const handlePushToTalkStart = async () => {
+    if (pushToTalkManager && !isPushToTalkActive) {
+      await pushToTalkManager.startTurn();
+      onPushToTalkStateChange?.(true);
+    }
+  };
+
+  const handlePushToTalkEnd = async () => {
+    if (pushToTalkManager && isPushToTalkActive) {
+      await pushToTalkManager.endTurn();
+      onPushToTalkStateChange?.(false);
+    }
+  };
 
   useEffect(() => {
     if (sessionStarted) {
@@ -164,6 +185,10 @@ export const SessionView = ({
               capabilities={capabilities}
               onChatOpenChange={setChatOpen}
               onSendMessage={handleSendMessage}
+              pushToTalkManager={pushToTalkManager}
+              isPushToTalkActive={isPushToTalkActive}
+              onPushToTalkStart={handlePushToTalkStart}
+              onPushToTalkEnd={handlePushToTalkEnd}
             />
           </div>
           {/* skrim */}

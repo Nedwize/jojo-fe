@@ -153,7 +153,7 @@ export const Welcome = ({
         <div className="mt-6 w-64">
           <div className="flex flex-col items-center gap-2">
             <Image
-              src="/bunny-sleep.png"
+              src="/bunny.png"
               alt="Bunny"
               height={150}
               width={200}

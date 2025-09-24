@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { Welcome } from '@/components/welcome';
 import useConnectionDetails from '@/hooks/useConnectionDetails';
 import { type AuthData, type LiveKitSessionData, createLiveKitSession } from '@/lib/auth';
+import { PushToTalkManager } from '@/lib/push-to-talk';
 import type { AppConfig } from '@/lib/types';
 
 const MotionWelcome = motion.create(Welcome);
@@ -26,6 +27,8 @@ export function App({ appConfig }: AppProps) {
   const [authData, setAuthData] = useState<AuthData | null>(null);
   const [liveKitSession, setLiveKitSession] = useState<LiveKitSessionData | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [pushToTalkManager, setPushToTalkManager] = useState<PushToTalkManager | null>(null);
+  const [isPushToTalkActive, setIsPushToTalkActive] = useState(false);
   const { refreshConnectionDetails } = useConnectionDetails(userId);
 
   useEffect(() => {
@@ -51,11 +54,16 @@ export function App({ appConfig }: AppProps) {
     if (sessionStarted && room.state === 'disconnected' && liveKitSession) {
       console.log('Connecting to LiveKit room:', liveKitSession.room);
       Promise.all([
-        room.localParticipant.setMicrophoneEnabled(true, undefined, {
+        room.localParticipant.setMicrophoneEnabled(false, undefined, {
           preConnectBuffer: appConfig.isPreConnectBufferEnabled,
         }),
         room.connect(liveKitSession.roomUrl, liveKitSession.token),
-      ]).catch((error) => {
+      ]).then(() => {
+        // Initialize PushToTalkManager after successful connection
+        const pttManager = new PushToTalkManager(room);
+        setPushToTalkManager(pttManager);
+        console.log('✅ PushToTalkManager initialized');
+      }).catch((error) => {
         console.error('LiveKit connection error:', error);
         toastAlert({
           title: 'There was an error connecting to the agent',
@@ -64,9 +72,44 @@ export function App({ appConfig }: AppProps) {
       });
     }
     return () => {
+      setPushToTalkManager(null);
       room.disconnect();
     };
   }, [room, sessionStarted, liveKitSession, appConfig.isPreConnectBufferEnabled]);
+
+  // Keyboard event handlers for push-to-talk
+  useEffect(() => {
+    if (!pushToTalkManager || !sessionStarted) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Spacebar for push-to-talk, but not when typing in inputs
+      if (event.code === 'Space' && !event.repeat && event.target === document.body) {
+        event.preventDefault();
+        if (!isPushToTalkActive) {
+          pushToTalkManager.startTurn();
+          setIsPushToTalkActive(true);
+        }
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'Space' && event.target === document.body) {
+        event.preventDefault();
+        if (isPushToTalkActive) {
+          pushToTalkManager.endTurn();
+          setIsPushToTalkActive(false);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [pushToTalkManager, sessionStarted, isPushToTalkActive]);
 
   const handleStartCall = useCallback(async () => {
     if (!authData) {
@@ -122,6 +165,9 @@ export function App({ appConfig }: AppProps) {
           appConfig={appConfig}
           disabled={!sessionStarted}
           sessionStarted={sessionStarted}
+          pushToTalkManager={pushToTalkManager}
+          isPushToTalkActive={isPushToTalkActive}
+          onPushToTalkStateChange={setIsPushToTalkActive}
           initial={{ opacity: 0 }}
           animate={{ opacity: sessionStarted ? 1 : 0 }}
           transition={{
